@@ -1,3 +1,6 @@
-from scipy import integrate
+import numpy as np
+import matplotlib as plt
+import scipy.io
 
-integrate.odeint()
+
+mat = scipy.io.loadmat('file.mat')
