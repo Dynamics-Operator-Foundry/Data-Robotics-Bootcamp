@@ -81,24 +81,7 @@ def ctrl_pid(x,xf):
 
     return u
 
-def ctrl_smc(x,xf):
-    # x_temp = np.array([x[0], x[2]])
-    # x_ref_temp = np.array([xf[0], xf[2]])
-    # # print(x_ref_temp)
-    # c = np.array([1,1])
-    # s = c.transpose() @ (x_ref_temp - x_temp)
-    # h = -1 * np.sign(s) # s_dot
-    
-    # print('lala')
-    # print(s)
-    # print(h)
-    
-    # f = np.array([[0,0], [0,1]])
-    # g = np.array([0,1])
-    
-    # u = np.linalg.inv(c.transpose() * g) *
-    # exit()
-    
+def ctrl_smc(x,xf):    
     C = np.array([[1,0,1,0],[0,1,0,1]])
     A = np.array([[0,0,1,0],[0,0,0,1],[0,0,0,0],[0,0,0,0]])
     B = np.array([[0,0],[0,0],[1,0],[0,1]])
@@ -108,10 +91,7 @@ def ctrl_smc(x,xf):
     g = B
     
     s = C @ (xf - x)
-    print(s)
-    
     h = - eta * np.sign(s)
-    
     u = np.linalg.inv(C @ g) @ (- C @ f - h)
     
     return u
@@ -161,8 +141,6 @@ while True:
         print("PICK CTRLLER!")
         exit()
         
-    print(xf[0:2] - x_rk4[0:2])
-    print()
     x_rk4_new = inte().rk4(f_double_integrator, x=x_rk4, u=u_input, h=t_step, ctrl_on=True)
     
     q0_all.append(x_rk4_new[0])
