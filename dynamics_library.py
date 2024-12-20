@@ -167,8 +167,7 @@ class Simulation2D(RobotUtils):
                     min(self.x_states[0]) - 2.0, max(self.x_states[0]) + 2.0 
                 ], 
                 [
-                    self.sim_info['ground'], 
-                    self.sim_info['ground']
+                    min(self.x_states[1]) - 2.0, min(self.x_states[1]) - 2.0 
                 ], 
                 color='black', linewidth=2
             )
