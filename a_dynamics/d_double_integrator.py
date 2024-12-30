@@ -49,7 +49,7 @@ def draw_anime(success):
         mission="Double Integrator", 
         sim_object="ball",
         sim_info={'ground':0},
-        save=True,
+        save=False,
         save_name=save_name
     )
     exit()
