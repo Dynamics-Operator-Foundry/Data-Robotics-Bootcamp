@@ -150,6 +150,9 @@ class Simulation2D(RobotUtils):
         self.sim_object = 'walker'
         self.sim_info = {'ground':0, 'slope_angle':0, 'leg_l':0}
         
+        self.cart = plt.Rectangle((0, 0), width=0.1, height=0.05, color='green', fill=True)
+        self.pole = None
+        
         self.fig = None
         self.ax = None
         
@@ -354,7 +357,7 @@ class Simulation2D(RobotUtils):
             )
         
         elif self.sim_object == 'spring_mass_damper':
-            # draw hopper
+            # draw SMD
             self.ball = plt.Circle((self.x_states[0][0], self.sim_info['ball_radius']), self.sim_info['ball_radius'], color='red', fill=True)
 
             self.leg, = self.ax.plot(
@@ -382,6 +385,34 @@ class Simulation2D(RobotUtils):
                 [self.sim_info['wall'], self.sim_info['wall']], 
                 [1.5, -0.0], color='black', linewidth=2)
             
+        elif self.sim_object == 'cart_pole':
+        
+            self.cart = plt.Rectangle(
+                (self.x_states[0][0] - 0.5/2, 0),
+                width=0.5, height=0.2, color='green', fill=True
+            )
+            
+            self.pole, = self.ax.plot(
+                [self.x_states[0][0], self.x_states[1][0]], 
+                [0, self.x_states[2][0]], 
+                color='blue', 
+                linewidth=3
+            )
+            
+            self.ax.add_patch(self.cart)
+            
+            # draw ground
+            self.ax.plot(
+                [
+                    min(np.min(self.x_states[0]), np.min(self.x_states[1])) - 2, 
+                    max(np.max(self.x_states[0]), np.max(self.x_states[1])) + 2
+                ], [
+                    self.sim_info['ground'], self.sim_info['ground']], color='black', linewidth=2)
+            self.ax.set_ylim(
+                min(self.x_states[2]) - 0.2, 
+                max(self.x_states[2]) + 0.2
+            )
+
         else:
             print("GOT ERROR CHOOSING OBJECT")
             exit()
@@ -474,8 +505,7 @@ class Simulation2D(RobotUtils):
             self.foot2.center = (foot_in_air[0], foot_in_air[1])
             
             
-            return (self.ball, self.foot1, self.foot2, self.leg1, self.leg2, self.hand1, self.hand2, self.head, self.neck)
-                    
+            return (self.ball, self.foot1, self.foot2, self.leg1, self.leg2, self.hand1, self.hand2, self.head, self.neck)             
         elif self.sim_object == 'double_pendulum':
             current_state = [
                 self.x_states[0][frame], 
@@ -493,8 +523,7 @@ class Simulation2D(RobotUtils):
                     [hinge[0], end_effector[0]], 
                     [hinge[1], end_effector[1]]                    
                 )
-            return (self.foot1, self.foot2, self.ball, self.leg1, self.leg2)
-        
+            return (self.foot1, self.foot2, self.ball, self.leg1, self.leg2)       
         elif self.sim_object == 'single_pendulum':
             current_state = self.x_states[0][frame]
             
@@ -506,8 +535,7 @@ class Simulation2D(RobotUtils):
                     [fixation[1], end_effector[1]]                    
                 )
             
-            return (self.foot1, self.ball, self.leg1,)
-        
+            return (self.foot1, self.ball, self.leg1,)      
         elif self.sim_object == 'spring_mass_damper':
             self.ball.center = (self.x_states[0][frame], self.sim_info['ball_radius'])
             self.leg.set_data(
@@ -517,7 +545,14 @@ class Simulation2D(RobotUtils):
             # self.foot_circle.center = (self.x_states[2][frame], self.x_states[3][frame])
 
             return (self.ball, self.leg,)
-        
+        elif self.sim_object == 'cart_pole':
+            self.cart.set_xy((self.x_states[0][frame]- 0.5/2, 0))
+            self.pole.set_data(
+                [self.x_states[0][frame], self.x_states[1][frame]], 
+                [0, self.x_states[2][frame]]
+                )
+
+            return (self.cart, self.pole,)
         else:
             exit()
             
