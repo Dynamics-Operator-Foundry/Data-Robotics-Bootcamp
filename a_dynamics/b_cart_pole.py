@@ -86,7 +86,7 @@ def draw_anime(success):
         mission="Cart Pole", 
         sim_object="cart_pole",
         sim_info={'ground':0},
-        save=True,
+        save=False,
         save_name=save_name
     )
     exit()

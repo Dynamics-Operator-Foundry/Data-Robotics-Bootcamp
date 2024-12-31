@@ -409,8 +409,8 @@ class Simulation2D(RobotUtils):
                 ], [
                     self.sim_info['ground'], self.sim_info['ground']], color='black', linewidth=2)
             self.ax.set_ylim(
-                min(self.x_states[2]) - 0.2, 
-                max(self.x_states[2]) + 0.2
+                -1.2, 
+                1.2
             )
 
         else:
