@@ -50,19 +50,6 @@ class DQN:
             n_batch=64,
             seed=seed
         )
-        
-        self.t_step = 0
-        
-    def step(
-        self,
-        state,
-        action,
-        reward,
-        next_state,
-        done
-    ):
-        
-        pass
     
     def act(self, state, eps=0.):
         state_tensor = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
@@ -94,6 +81,8 @@ class DQN:
         
     def learn(self, experiences, gamma):
         states, actions, rewards, next_states, dones = zip(*experiences)
+        # N samples
+        
         states = torch.from_numpy(np.vstack(states)).float().to(self.device)
         actions = torch.from_numpy(np.vstack(actions)).long().to(self.device)
         rewards = torch.from_numpy(np.vstack(rewards)).float().to(self.device)
@@ -101,9 +90,12 @@ class DQN:
         dones = torch.from_numpy(np.vstack(dones).astype(np.uint8)).float().to(self.device)
         
         q_targets_next = self.qnn_target(next_states).detach().max(1)[0].unsqueeze(1)
+        # with N samples, qnn_target(next_states) gives N * n_action. with max, we then get dimension N
         
         q_targets = rewards + (gamma * q_targets_next * (1-dones))
         q_expected = self.qnn_hat(states).gather(1, actions)
+        # with N samples, qnn_hat(next_states) gives N * n_action. with gather, we then get dimension N, which we only get the value the action was taken
+        
         
         loss = funcs.mse_loss(q_expected, q_targets)
         self.optimizer.zero_grad()
