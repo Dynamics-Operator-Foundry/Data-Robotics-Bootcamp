@@ -6,9 +6,8 @@ import random
 import torch
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from dynamics_library import Integrator as inte, Simulation2D as sim2D, RobotUtils as util
+from dynamics_library import Integrator as inte, Simulation2D as sim2D
 from a_dqn import DQN as dqn
-from rl_lib import QNN as qnn
 
 print("")
 ctrller = "DQN" # Deep Q-Network
@@ -223,10 +222,3 @@ else:
             break
 
 draw_anime(True)
-
-
-
-
-
-
-# ind = 0
