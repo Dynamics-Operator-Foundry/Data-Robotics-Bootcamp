@@ -82,7 +82,7 @@ def draw_anime(success):
         mission="Cart Pole", 
         sim_object="cart_pole",
         sim_info={'ground':0},
-        save=True,
+        save=False,
         save_name=save_name
     )
     exit()
@@ -206,6 +206,8 @@ else:
         action_ind = DQN_agent.deploy(state=x_rk4, eps=0.0)
         u_k = action_dict[action_ind]
         print(action_ind)
+        
+        u_k = 0
         
         x_rk4_new = inte().rk4(f_cart_pole, x=x_rk4, u=u_k,h=t_step, ctrl_on=True)
         
