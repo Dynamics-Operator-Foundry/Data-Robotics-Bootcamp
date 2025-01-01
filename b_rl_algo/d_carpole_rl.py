@@ -25,7 +25,7 @@ lx1_all = []
 t_all = []
 
 t = 0
-t_lim = 10
+t_lim = 5
 sample_factor = 1
 
 mp = 1.0 # mass of pole
@@ -66,10 +66,10 @@ def draw_anime(success):
     print()
     if success:
         print('SYSTEM INTEGRATION SUCCEEDED...')
-        save_name = "cart_pole_dqn"
+        save_name = "cart_pole_balance_dqn"
     else:
         print('SYSTEM INTEGRATION FAILED...')
-        save_name = "cart_pole_dqn" + "_failed"
+        save_name = "cart_pole_balance_dqn" + "_failed"
     
     sim2D().anime(
         t=t_all[::sample_factor], 
@@ -82,7 +82,7 @@ def draw_anime(success):
         mission="Cart Pole", 
         sim_object="cart_pole",
         sim_info={'ground':0},
-        save=False,
+        save=True,
         save_name=save_name
     )
     exit()
@@ -95,13 +95,14 @@ def env_reset():
     
     cart_position_range = (-0.05, 0.05)  
     cart_velocity_range = (-0.01, 0.01)  
-    pole_angle_range = (-0.05, 0.05)     
+    pole_angle_range = (-0.1, 0.1) # for balance 
+    # pole_angle_range = (-0.05 + np.pi, 0.05 + np.pi) # for swing and balance
     pole_angular_velocity_range = (-0.05, 0.05)
     
     initial_state = np.array([
-        np.random.uniform(*cart_position_range), 
-        np.random.uniform(*cart_velocity_range), 
-        np.random.uniform(*pole_angle_range), 
+        np.random.uniform(*cart_position_range),
+        np.random.uniform(*pole_angle_range),  
+        np.random.uniform(*cart_velocity_range),
         np.random.uniform(*pole_angular_velocity_range)
     ])
     
@@ -109,20 +110,21 @@ def env_reset():
     return initial_state
 
 
-num_episodes = 250
-max_steps_per_episode = 200
+num_episodes = 500
+max_steps_per_episode = 500
 epsilon_start = 1.0
 epsilon_end = 0.2
-epsilon_decay_rate = 0.99
-gamma = 0.9
+epsilon_decay_rate = 0.9999
+gamma = 0.99
 lr = 0.0025
 buffer_size = 10000
 buffer = deque(maxlen=buffer_size)
-batch_size = 128
+batch_size = 256
 update_frequency = 10
 
 n_input = 4
-n_output = 4 # -1 N, -0.5N, 0.5N, 1N
+n_output = 4 # for balance
+# n_output = 8 # for swing and balance
 DQN_agent = dqn(
     n_state=n_input,
     n_action=n_output,
@@ -140,7 +142,8 @@ def anime_buffer(x_rk4):
     return
 
 x_rk4 = env_reset()
-action_dict = np.array([-10, -5, 5, 10])
+action_dict = np.array([-10, -5, 5, 10]) # for balance
+# action_dict = np.array([-40, -10, -5, -2, 2, 5, 10, 40]) # for swing and balance
 
 train = False
 if train:
@@ -162,17 +165,33 @@ if train:
                 ctrl_on=True
             )
             
-            reward = 1
-            if np.abs(x_rk4_new[1]) > (0.5 / 180 * np.pi):
-                reward = -1
+            # # for swing
+            # reward = 10 - (x_rk4_new[1]**2 + 0.1 * x_rk4_new[3]**2 + 0.1 * x_rk4_new[0]**2 + 0.1 * x_rk4_new[1]**2)
+            
+            # if np.abs(x_rk4_new[1]) > (30 / 180 * np.pi) or np.abs(x_rk4_new[0]) > 3:
+            #     reward -= 50
+                
+            reward = - (x_rk4_new[1]**2 + 0.1 * x_rk4_new[3]**2 + 0.1 * x_rk4_new[0]**2 + 0.001 * u_k**2)
+            if np.abs(x_rk4_new[1]) < (0.5 / 180 * np.pi):
+                reward += 10
+
+            
+            done = False
+            # if np.abs(x_rk4_new[0]) > 5:
+                # done = True
+
+            # # for balance
+            # reward = 1
+            # if np.abs(x_rk4_new[1]) > (0.5 / 180 * np.pi):
+            #     reward = -1
+            
+            # done = False
+            # if np.abs(x_rk4_new[1]) > (30 / 180 * np.pi):
+            #     done = True
+            # elif np.abs(x_rk4_new[0]) > 3:
+            #     done = True
 
             reward_acc += reward
-                
-            done = False
-            if np.abs(x_rk4_new[1]) > (30 / 180 * np.pi):
-                done = True
-            elif np.abs(x_rk4_new[0]) > 3:
-                done = True
             
             buffer.append((x_rk4, action_ind, reward, x_rk4_new, done))
             
@@ -183,17 +202,17 @@ if train:
             x_rk4 = x_rk4_new
             anime_buffer(x_rk4)
             
-            if done:
+            if done:            
                 break
         
         if (episode + 1) % update_frequency == 0:
             # draw_anime(True)
             print(f"Episode {episode + 1}: Finished training, reward: {reward_acc}")
-            torch.save(DQN_agent.qnn_hat.state_dict(), f'dqn_weights_episode_{episode + 1}.pth')
+            torch.save(DQN_agent.qnn_hat.state_dict(), f'dqn_weights_episode_{episode + 1}.pt')
             
 else:
     
-    DQN_agent.qnn_deploy.load_state_dict(torch.load('dqn_weights_episode_240.pth'))
+    DQN_agent.qnn_deploy.load_state_dict(torch.load('dqn_weights_episode_450.pt'))
     
     x_rk4 = env_reset()
     ind = 0
@@ -207,7 +226,7 @@ else:
         u_k = action_dict[action_ind]
         print(action_ind)
         
-        u_k = 0
+        # u_k = 0
         
         x_rk4_new = inte().rk4(f_cart_pole, x=x_rk4, u=u_k,h=t_step, ctrl_on=True)
         
@@ -223,4 +242,4 @@ else:
         if t > t_lim:
             break
 
-draw_anime(True)
+    draw_anime(True)
