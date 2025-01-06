@@ -76,8 +76,8 @@ class QNN(nn.Module):
         device="cpu"
     ):
         # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.device = device
         super(QNN, self).__init__()
+        self.device = device
         self.seed = torch.manual_seed(seed)
         self.fc1 = nn.Linear(n_state, n_fc1)
         self.fc2 = nn.Linear(n_fc1, n_fc2)
@@ -91,3 +91,51 @@ class QNN(nn.Module):
         
         return y
 
+class PPOPolicyNN(nn.Module):
+    def __init__(
+        self, 
+        n_state,
+        n_action,
+        n_fc1=64,
+        n_fc2=64,
+        device='cpu'
+    ):
+        super(PPOPolicyNN, self).__init__()
+        # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device
+        self.fc1 = nn.Linear(n_state, n_fc1)
+        self.fc2 = nn.Linear(n_fc1, n_fc2)
+        self.fc3_mean = nn.Linear(n_fc2, n_action)
+        
+        self.log_std = nn.Parameter(torch.zeros(n_action))
+
+    def forward(self, x):
+        
+        y = funcs.relu(self.fc1(x))
+        y = funcs.relu(self.fc2(y))
+        mean = self.fc3_mean(y)
+        std = self.log_std.exp()
+        
+        return mean, std
+
+class PPOValueNN(nn.Module):
+    def __init__(
+        self, 
+        n_state,
+        n_fc1=64,
+        n_fc2=64,
+        device='cpu'
+    ):
+        super(PPOValueNN, self).__init__()
+        # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device
+        self.fc1 = nn.Linear(n_state, n_fc1)
+        self.fc2 = nn.Linear(n_fc1, n_fc2)
+        self.fc3 = nn.Linear(n_fc2, 1)
+
+    def forward(self, x):
+        y = funcs.relu(self.fc1(x))
+        y = funcs.relu(self.fc2(y))
+        value = self.fc3(y)
+        
+        return value

@@ -95,8 +95,8 @@ def env_reset():
     
     cart_position_range = (-0.05, 0.05)  
     cart_velocity_range = (-0.01, 0.01)  
-    pole_angle_range = (-0.1, 0.1) # for balance 
-    # pole_angle_range = (-0.05 + np.pi, 0.05 + np.pi) # for swing and balance
+    # pole_angle_range = (-0.1, 0.1) # for balance 
+    pole_angle_range = (-0.05 + np.pi, 0.05 + np.pi) # for swing and balance
     pole_angular_velocity_range = (-0.05, 0.05)
     
     initial_state = np.array([
@@ -123,8 +123,8 @@ batch_size = 256
 update_frequency = 10
 
 n_input = 4
-n_output = 4 # for balance
-# n_output = 8 # for swing and balance
+# n_output = 4 # for balance
+n_output = 8 # for swing and balance
 DQN_agent = dqn(
     n_state=n_input,
     n_action=n_output,
@@ -142,10 +142,10 @@ def anime_buffer(x_rk4):
     return
 
 x_rk4 = env_reset()
-action_dict = np.array([-10, -5, 5, 10]) # for balance
-# action_dict = np.array([-40, -10, -5, -2, 2, 5, 10, 40]) # for swing and balance
+# action_dict = np.array([-10, -5, 5, 10]) # for balance
+action_dict = np.array([-40, -10, -5, -2, 2, 5, 10, 40]) # for swing and balance
 
-train = False
+train = True
 if train:
     for episode in range(num_episodes):
         reward_acc = 0
@@ -171,7 +171,7 @@ if train:
             # if np.abs(x_rk4_new[1]) > (30 / 180 * np.pi) or np.abs(x_rk4_new[0]) > 3:
             #     reward -= 50
                 
-            reward = - (x_rk4_new[1]**2 + 0.1 * x_rk4_new[3]**2 + 0.1 * x_rk4_new[0]**2 + 0.001 * u_k**2)
+            reward = - (x_rk4_new[1]**2 + 0.1 * x_rk4_new[3]**2 + 0.01 * x_rk4_new[0]**2 + 0.001 * u_k**2)
             if np.abs(x_rk4_new[1]) < (0.5 / 180 * np.pi):
                 reward += 10
 
