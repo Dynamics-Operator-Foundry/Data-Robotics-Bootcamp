@@ -1,4 +1,5 @@
 # implementation of Discrete Fourier Transform (DFT)
+# formally implementated with cos + isin
 import wave
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,7 +34,7 @@ def viz_t_domain(t, data, save=False, save_name = ''):
     plt.grid(True)
     if save:
         plt.savefig(save_name + "_wav_plot.png", dpi=300, bbox_inches="tight", pad_inches=0.1)  # pad_inches adds margin
-    plt.show()
+    # plt.show()
     
     return
 
@@ -65,7 +66,7 @@ def viz_f_domain(f, bins, save=False, save_name=''):
 
     # Show the plot
     plt.tight_layout()
-    plt.show()
+    # plt.show()
 
 # Now perform DFT with 192000 / 4 = 48000 data point per sec
 downsample = 4
@@ -85,6 +86,14 @@ print(t.shape)
 # viz_t_domain(t, ncos_i)
 # exit()
 
+def exp(theta):
+    # exp(i theta) = cos(theta) + i sin(theta)
+    return np.cos(theta) + 1j * np.sin(theta)
+
+# z = 3 + 4j
+# theta = np.pi  # Example: theta = pi
+# result = exp(theta)
+# print(result)
 
 freq_lib = np.arange(-400, 400, 1)
 t_length = t[t.shape[0] - 1]
@@ -94,16 +103,17 @@ bins = np.zeros((len(freq_lib), 2))
 # Compute Fourier coefficients
 for i, freq_i in enumerate(freq_lib):
     if freq_i == 0:
-        cos_i = np.cos(0 * t)
-        sin_i = np.sin(0 * t)
+        euler = exp(0 * t)
     else:
         period = t_length / freq_i
-        cos_i = np.cos(2 * np.pi / period * t)
-        sin_i = np.sin(2 * np.pi / period * t)
-        
-    bins[i, 0] = np.inner(audio_data_downsampled, cos_i) / n_length  # +cos
+        euler = exp(2 * np.pi / period * t)
     
-    bins[i, 1] = np.inner(audio_data_downsampled, sin_i) / n_length  # +sin
+    dot_i = np.inner(audio_data_downsampled, euler) / n_length
+    print(dot_i)
+    # print(dot_i.shape)
+    # print("lala")
+    bins[i, 0] = np.real(dot_i)  # +cos
+    bins[i, 1] = np.imag(dot_i)  # +sin
 
 # reconstruct signal
 audio_reconstruct = np.zeros(shape=t.shape, dtype=float)
@@ -129,35 +139,35 @@ audio_data_lala = np.array(audio_reconstruct, dtype=np.int16)
 
 sample_rate = new_frame_rate
 
-output_path = "voice_reconstruct.wav"
+output_path = "exp_voice_reconstruct.wav"
 write(output_path, int(sample_rate), audio_data_lala)
 
 viz_t_domain(
     t=t,
     data=audio_data_downsampled,
     save=True,
-    save_name='original_data'
+    save_name='exp_original_data'
 )
 
 viz_t_domain(
     t=t,
     data=audio_reconstruct,
     save=True,
-    save_name='reconstruct_data'
+    save_name='exp_reconstruct_data'
 )
 
 viz_t_domain(
     t=t,
     data=audio_reconstruct-audio_data_downsampled,
     save=True,
-    save_name='reconstruct_error'
+    save_name='exp_reconstruct_error'
 )
 
 viz_f_domain(
     f=freq_lib,
     bins=bins,
     save=True,
-    save_name='DFT'
+    save_name='exp_DFT'
 )
     
 exit()
