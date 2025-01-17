@@ -34,7 +34,7 @@ def viz_t_domain(t, data, save=False, save_name = ''):
     plt.grid(True)
     if save:
         plt.savefig(save_name + "_wav_plot.png", dpi=300, bbox_inches="tight", pad_inches=0.1)  # pad_inches adds margin
-    # plt.show()
+    plt.show()
     
     return
 
@@ -66,7 +66,7 @@ def viz_f_domain(f, bins, save=False, save_name=''):
 
     # Show the plot
     plt.tight_layout()
-    # plt.show()
+    plt.show()
 
 # Now perform DFT with 192000 / 4 = 48000 data point per sec
 downsample = 4
@@ -95,7 +95,7 @@ def exp(theta):
 # result = exp(theta)
 # print(result)
 
-freq_lib = np.arange(-400, 400, 1)
+freq_lib = np.arange(-400, 401, 1)
 t_length = t[t.shape[0] - 1]
 
 bins = np.zeros((len(freq_lib), 2))

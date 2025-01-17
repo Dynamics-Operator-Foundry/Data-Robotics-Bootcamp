@@ -1,4 +1,5 @@
-# implementation of Fast Fourier Transform (FFT)
+# implementation of Discrete Fourier Transform (DFT)
+# formally implementated with cos + isin in matrix form
 import wave
 import numpy as np
 import matplotlib.pyplot as plt
@@ -75,17 +76,107 @@ n_length = audio_data_downsampled.shape[0]
 
 # print(audio_data_downsampled.shape[0] / new_frame_rate)
 t = np.arange(0, audio_data_downsampled.shape[0], 1)
-print(t.shape)
 
+# freq_i = 10
+# t_length = t.shape[0]
+# period = t_length / freq_i
+# ncos_i = np.cos(2 * np.pi / period * t)
+# # print(ncos_i)
+# viz_t_domain(t, ncos_i)
+# exit()
 
+def exp(theta):
+    # exp(i theta) = cos(theta) + i sin(theta)
+    return np.cos(theta) + 1j * np.sin(theta)
 
-def fft(data):
-    N = data.shape[0]
-    if N == 1:
-        return data
+# z = 3 + 4j
+# theta = np.pi  # Example: theta = pi
+# result = exp(theta)
+# print(result)
+# exit()
+
+t_length = t[t.shape[0] - 1]
+print(n_length)
+bins = np.zeros((n_length, 2))
+
+dft_mat = np.zeros((n_length, n_length), dtype=np.complex128)
+
+for freq_i in range(n_length):
+    if freq_i == 0:
+        euler = exp(0 * t)
+    else:
+        period = t_length / freq_i
+        euler = exp(2 * np.pi / period * t)
     
-    data_even = fft(data[0:N:2])
-    data_odd  = fft(data[0:N:2])
+    dft_mat[freq_i,:] = euler
+    # print(freq_i)
+
+f = audio_data_downsampled
+F = dft_mat @ f / n_length
+
+# print(F)
+# exit()
+
+bins[:,0] = F.real
+bins[:,1] = F.imag
+
+# reconstruct signal
+audio_reconstruct = np.zeros(shape=t.shape, dtype=float)
+
+for i in range(n_length):
+    freq_i = i
     
-    data_fft = 
-    pass
+    print(freq_i)
+    
+    if freq_i == 0:
+        # print(i)
+        audio_reconstruct += (
+            bins[i, 0] * np.cos(0*t) 
+            + bins[i, 1] * np.sin(0*t) 
+        )
+        continue
+    
+    period = t_length / freq_i
+    
+    audio_reconstruct += (
+        bins[i, 0] * np.cos(2 * np.pi / period * t) 
+        + bins[i, 1] * np.sin(2 * np.pi / period * t) 
+    )
+    # print(i)
+    
+audio_data_lala = np.array(audio_reconstruct, dtype=np.int16)
+
+sample_rate = new_frame_rate
+
+output_path = "mat_voice_reconstruct.wav"
+write(output_path, int(sample_rate), audio_data_lala)
+
+viz_t_domain(
+    t=t,
+    data=audio_data_downsampled,
+    save=True,
+    save_name='mat_original_data'
+)
+
+viz_t_domain(
+    t=t,
+    data=audio_reconstruct,
+    save=True,
+    save_name='mat_reconstruct_data'
+)
+
+viz_t_domain(
+    t=t,
+    data=audio_reconstruct-audio_data_downsampled,
+    save=True,
+    save_name='mat_reconstruct_error'
+)
+
+viz_f_domain(
+    f=np.arange(0,n_length,1),
+    bins=bins,
+    save=True,
+    save_name='mat_DFT'
+)
+    
+exit()

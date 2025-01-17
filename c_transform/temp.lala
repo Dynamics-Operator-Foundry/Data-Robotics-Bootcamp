@@ -1,0 +1,23 @@
+Function FFT(input_array):
+    Input: input_array - Array of size N (must be a power of 2)
+    Output: Array containing the FFT of the input
+
+    N ← length(input_array)
+    
+    If N == 1:  # Base case
+        Return input_array
+    
+    # Split input into even and odd indices
+    even ← FFT(input_array[0:N:2])  # Elements at even indices
+    odd  ← FFT(input_array[1:N:2])  # Elements at odd indices
+
+    # Initialize output array
+    output ← Array of size N
+    
+    # Calculate twiddle factors and combine even and odd parts
+    For k = 0 to N/2 - 1:
+        t ← exp(-2πi * k / N) * odd[k]
+        output[k] ← even[k] + t
+        output[k + N/2] ← even[k] - t
+
+    Return output

@@ -87,7 +87,7 @@ print(t.shape)
 # exit()
 
 
-freq_lib = np.arange(-400, 400, 1)
+freq_lib = np.arange(-400, 401, 1)
 t_length = t[t.shape[0] - 1]
 
 bins = np.zeros((len(freq_lib), 2))
@@ -130,35 +130,35 @@ audio_data_lala = np.array(audio_reconstruct, dtype=np.int16)
 
 sample_rate = new_frame_rate
 
-output_path = "voice_reconstruct.wav"
+output_path = "naive_voice_reconstruct.wav"
 write(output_path, int(sample_rate), audio_data_lala)
 
 viz_t_domain(
     t=t,
     data=audio_data_downsampled,
     save=True,
-    save_name='original_data'
+    save_name='naive_original_data'
 )
 
 viz_t_domain(
     t=t,
     data=audio_reconstruct,
     save=True,
-    save_name='reconstruct_data'
+    save_name='naive_reconstruct_data'
 )
 
 viz_t_domain(
     t=t,
     data=audio_reconstruct-audio_data_downsampled,
     save=True,
-    save_name='reconstruct_error'
+    save_name='naive_reconstruct_error'
 )
 
 viz_f_domain(
     f=freq_lib,
     bins=bins,
     save=True,
-    save_name='DFT'
+    save_name='naive_DFT'
 )
     
 exit()
