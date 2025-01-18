@@ -106,7 +106,7 @@ for freq_i in range(n_length):
         euler = exp(0 * t)
     else:
         period = t_length / freq_i
-        euler = exp(2 * np.pi / period * t)
+        euler = np.exp(-2j * np.pi / period * t)
     
     dft_mat[freq_i,:] = euler
     # print(freq_i)
@@ -114,14 +114,14 @@ for freq_i in range(n_length):
 f = audio_data_downsampled
 F = dft_mat @ f / n_length
 
-# print(F)
+# print(F.shape)
 # exit()
 
 bins[:,0] = F.real
 bins[:,1] = F.imag
 
 # reconstruct signal
-audio_reconstruct = np.zeros(shape=t.shape, dtype=float)
+audio_reconstruct = np.zeros(shape=t.shape, dtype=np.complex128)
 
 for i in range(n_length):
     freq_i = i
@@ -132,17 +132,13 @@ for i in range(n_length):
         # print(i)
         audio_reconstruct += (
             bins[i, 0] * np.cos(0*t) 
-            + bins[i, 1] * np.sin(0*t) 
+            - bins[i, 1] * np.sin(0*t) 
         )
         continue
     
     period = t_length / freq_i
-    
-    audio_reconstruct += (
-        bins[i, 0] * np.cos(2 * np.pi / period * t) 
-        + bins[i, 1] * np.sin(2 * np.pi / period * t) 
-    )
-    # print(i)
+    # np.exp(-2j * np.pi / period * t)
+    audio_reconstruct += F[i] * np.exp(2j * np.pi / period * t)
     
 audio_data_lala = np.array(audio_reconstruct, dtype=np.int16)
 
